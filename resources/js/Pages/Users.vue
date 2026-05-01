@@ -1,7 +1,7 @@
 <template>
     <Head>
         <title>Users — Inertia App</title>
-        <meta name="description" content="Browse the list of registered users." />
+        <meta name="description" content="Browse the list of registered users here." />
     </Head>
 
     <div class="flex items-end justify-between mb-4 gap-3">

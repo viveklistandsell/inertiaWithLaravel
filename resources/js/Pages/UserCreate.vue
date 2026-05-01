@@ -200,128 +200,112 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import Layout from '../Shared/Layout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { debounce, throttle } from '../Composables/useDebounce.js';
 
-export default {
-    layout: Layout,
-    components: { Head, Link },
-    setup() {
-        const form = useForm({
-            name: '',
-            email: '',
-            phone: '',
-            address: '',
-            password: '',
-            password_confirmation: '',
-        });
+defineOptions({ layout: Layout });
 
-        const emailStatus = ref('idle');
+const form = useForm({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    password: '',
+    password_confirmation: '',
+});
 
-        const checkEmailAvailability = debounce(async (email) => {
-            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                emailStatus.value = 'idle';
-                return;
-            }
-            emailStatus.value = 'checking';
-            try {
-                const res = await fetch(`/user/check-email?email=${encodeURIComponent(email)}`);
-                const data = await res.json();
-                if (data.email !== form.email) return;
-                emailStatus.value = data.available ? 'available' : 'taken';
-            } catch (e) {
-                emailStatus.value = 'idle';
-            }
-        }, 500);
+const emailStatus = ref('idle');
 
-        const onEmailInput = () => {
-            form.clearErrors('email');
-            emailStatus.value = 'pending';
-            checkEmailAvailability(form.email.trim());
-        };
+const checkEmailAvailability = debounce(async (email) => {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        emailStatus.value = 'idle';
+        return;
+    }
+    emailStatus.value = 'checking';
+    try {
+        const res = await fetch(`/user/check-email?email=${encodeURIComponent(email)}`);
+        const data = await res.json();
+        if (data.email !== form.email) return;
+        emailStatus.value = data.available ? 'available' : 'taken';
+    } catch (e) {
+        emailStatus.value = 'idle';
+    }
+}, 500);
 
-        const emailStatusLabel = computed(() => ({
-            pending: '...',
-            checking: 'Checking…',
-            available: '✓ Available',
-            taken: '✗ Taken',
-        }[emailStatus.value] ?? ''));
-
-        const emailStatusClass = computed(() => ({
-            pending: 'text-gray-400',
-            checking: 'text-blue-500',
-            available: 'text-green-600',
-            taken: 'text-red-600',
-        }[emailStatus.value] ?? ''));
-
-        const emailBorderClass = computed(() => {
-            if (form.errors.email || emailStatus.value === 'taken') return 'border-red-400';
-            if (emailStatus.value === 'available') return 'border-green-400';
-            return 'border-gray-300';
-        });
-
-        const doSubmit = () => {
-            form
-                .transform((data) => ({
-                    ...data,
-                    name: data.name.trim(),
-                    email: data.email.trim().toLowerCase(),
-                    phone: data.phone.trim(),
-                    address: data.address.trim(),
-                }))
-                .post('/user', {
-                    preserveScroll: true,
-                    onBefore: () => {
-                        if (!form.isDirty) {
-                            return false;
-                        }
-                    },
-                    onSuccess: () => {
-                        form.reset();
-                    },
-                    onError: (errors) => {
-                        const firstField = Object.keys(errors)[0];
-                        if (firstField) {
-                            const el = document.querySelector(`[name="${firstField}"], [v-model="form.${firstField}"]`);
-                            el?.focus?.();
-                        }
-                    },
-                    onFinish: () => {
-                        form.password = '';
-                        form.password_confirmation = '';
-                    },
-                });
-        };
-
-        const submit = throttle(doSubmit, 1000);
-
-        const hasErrors = computed(() => Object.keys(form.errors).length > 0);
-
-        const debugState = computed(() => JSON.stringify({
-            isDirty: form.isDirty,
-            processing: form.processing,
-            wasSuccessful: form.wasSuccessful,
-            recentlySuccessful: form.recentlySuccessful,
-            emailStatus: emailStatus.value,
-            hasErrors: hasErrors.value,
-            errorCount: Object.keys(form.errors).length,
-            data: { ...form.data() },
-        }, null, 2));
-
-        return {
-            form,
-            submit,
-            hasErrors,
-            debugState,
-            emailStatus,
-            emailStatusLabel,
-            emailStatusClass,
-            emailBorderClass,
-            onEmailInput,
-        };
-    },
+const onEmailInput = () => {
+    form.clearErrors('email');
+    emailStatus.value = 'pending';
+    checkEmailAvailability(form.email.trim());
 };
+
+const emailStatusLabel = computed(() => ({
+    pending: '...',
+    checking: 'Checking…',
+    available: '✓ Available',
+    taken: '✗ Taken',
+}[emailStatus.value] ?? ''));
+
+const emailStatusClass = computed(() => ({
+    pending: 'text-gray-400',
+    checking: 'text-blue-500',
+    available: 'text-green-600',
+    taken: 'text-red-600',
+}[emailStatus.value] ?? ''));
+
+const emailBorderClass = computed(() => {
+    if (form.errors.email || emailStatus.value === 'taken') return 'border-red-400';
+    if (emailStatus.value === 'available') return 'border-green-400';
+    return 'border-gray-300';
+});
+
+const doSubmit = () => {
+    form
+        .transform((data) => ({
+            ...data,
+            name: data.name.trim(),
+            email: data.email.trim().toLowerCase(),
+            phone: data.phone.trim(),
+            address: data.address.trim(),
+        }))
+        .post('/user', {
+            preserveScroll: true,
+            onBefore: () => {
+                if (!form.isDirty) {
+                    return false;
+                }
+            },
+            onSuccess: () => {
+                form.reset();
+            },
+            onError: (errors) => {
+                const firstField = Object.keys(errors)[0];
+                if (firstField) {
+                    const el = document.querySelector(`[name="${firstField}"], [v-model="form.${firstField}"]`);
+                    el?.focus?.();
+                }
+            },
+            onFinish: () => {
+                form.password = '';
+                form.password_confirmation = '';
+            },
+        });
+};
+
+const submit = throttle(doSubmit, 1000);
+
+const hasErrors = computed(() => Object.keys(form.errors).length > 0);
+
+const debugState = computed(() => JSON.stringify({
+    isDirty: form.isDirty,
+    processing: form.processing,
+    wasSuccessful: form.wasSuccessful,
+    recentlySuccessful: form.recentlySuccessful,
+    emailStatus: emailStatus.value,
+    hasErrors: hasErrors.value,
+    errorCount: Object.keys(form.errors).length,
+    data: { ...form.data() },
+}, null, 2));
 </script>
