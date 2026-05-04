@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Lang;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -49,6 +51,10 @@ class HandleInertiaRequests extends Middleware
                 'message' => fn () => $request->session()->get('message'),
                 'error'   => fn () => $request->session()->get('error'),
             ],
+            'locale'           => fn () => App::getLocale(),
+            'fallbackLocale'   => fn () => config('app.fallback_locale'),
+            'supportedLocales' => SetLocale::SUPPORTED,
+            'translations'     => fn () => Lang::get('messages', [], App::getLocale()),
         ];
     }
 }

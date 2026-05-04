@@ -1,11 +1,11 @@
 <template>
     <Head>
-        <title>Create User — Inertia App</title>
+        <title>{{ t('users.create_user') }} — {{ t('app_name') }}</title>
     </Head>
 
     <div class="max-w-2xl mx-auto">
         <div class="flex items-center gap-3 mb-6">
-            <Link href="/user" class="text-blue-600 hover:underline">&larr; Back to Users</Link>
+            <Link :href="localePath('/user')" class="text-blue-600 hover:underline">&larr; {{ t('common.back') }}</Link>
         </div>
 
         <div class="bg-white rounded-xl shadow border border-gray-100 p-6">
@@ -18,12 +18,12 @@
                         +
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Create New User</h1>
+                        <h1 class="text-2xl font-bold text-gray-800">{{ t('users.create_user') }}</h1>
                         <p class="text-sm text-gray-500">Demo of Inertia's <code>useForm</code> helper.</p>
                     </div>
                 </div>
                 <span v-if="form.isDirty" class="px-2 py-1 text-xs font-semibold bg-amber-100 text-amber-700 rounded-full">
-                    Unsaved changes
+                    {{ t('users.unsaved') }}
                 </span>
             </div>
 
@@ -37,7 +37,7 @@
             <form @submit.prevent="submit" class="space-y-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">
-                        Name <span class="text-red-500">*</span>
+                        {{ t('users.name') }} <span class="text-red-500">*</span>
                     </label>
                     <input
                         v-model="form.name"
@@ -53,7 +53,7 @@
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">
-                        Email <span class="text-red-500">*</span>
+                        {{ t('users.email') }} <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
                         <input
@@ -80,7 +80,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Phone</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">{{ t('users.phone') }}</label>
                     <input
                         v-model="form.phone"
                         @input="form.clearErrors('phone')"
@@ -94,7 +94,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Address</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">{{ t('users.address') }}</label>
                     <textarea
                         v-model="form.address"
                         @input="form.clearErrors('address')"
@@ -110,7 +110,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">
-                            Password <span class="text-red-500">*</span>
+                            {{ t('users.password') }} <span class="text-red-500">*</span>
                         </label>
                         <input
                             v-model="form.password"
@@ -126,7 +126,7 @@
 
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">
-                            Confirm Password <span class="text-red-500">*</span>
+                            {{ t('users.password_confirmation') }} <span class="text-red-500">*</span>
                         </label>
                         <input
                             v-model="form.password_confirmation"
@@ -145,7 +145,7 @@
                         :disabled="!form.isDirty"
                         class="px-6 py-2 bg-green-600 text-white font-semibold rounded shadow hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                     >
-                        Create User
+                        {{ t('users.submit_create') }}
                     </button>
                     <button
                         v-else
@@ -154,7 +154,7 @@
                         class="px-6 py-2 bg-red-500 text-white font-semibold rounded shadow hover:bg-red-600 transition flex items-center gap-2"
                     >
                         <span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        Cancel Request
+                        {{ t('users.cancel_request') }}
                     </button>
 
                     <button
@@ -163,14 +163,14 @@
                         :disabled="form.processing"
                         class="px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded hover:bg-gray-200 disabled:opacity-50 transition"
                     >
-                        Clear
+                        {{ t('common.clear') }}
                     </button>
 
                     <Link
-                        href="/user"
+                        :href="localePath('/user')"
                         class="px-6 py-2 text-gray-600 font-semibold hover:text-gray-800 transition"
                     >
-                        Back
+                        {{ t('common.back') }}
                     </Link>
 
                     <Transition
@@ -182,7 +182,7 @@
                         leave-to-class="opacity-0"
                     >
                         <span v-if="form.recentlySuccessful" class="text-sm text-green-600 font-semibold">
-                            &#10003; User created!
+                            &#10003; {{ t('users.created_ok') }}
                         </span>
                     </Transition>
                 </div>
@@ -205,8 +205,11 @@ import Layout from '../Shared/Layout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { debounce, throttle } from '../Composables/useDebounce.js';
+import { useTranslator } from '../Composables/useTranslator.js';
 
 defineOptions({ layout: Layout });
+
+const { t, localePath } = useTranslator();
 
 const form = useForm({
     name: '',
@@ -226,7 +229,7 @@ const checkEmailAvailability = debounce(async (email) => {
     }
     emailStatus.value = 'checking';
     try {
-        const res = await fetch(`/user/check-email?email=${encodeURIComponent(email)}`);
+        const res = await fetch(`${localePath('/user/check-email')}?email=${encodeURIComponent(email)}`);
         const data = await res.json();
         if (data.email !== form.email) return;
         emailStatus.value = data.available ? 'available' : 'taken';
@@ -270,7 +273,7 @@ const doSubmit = () => {
             phone: data.phone.trim(),
             address: data.address.trim(),
         }))
-        .post('/user', {
+        .post(localePath('/user'), {
             preserveScroll: true,
             onBefore: () => {
                 if (!form.isDirty) {

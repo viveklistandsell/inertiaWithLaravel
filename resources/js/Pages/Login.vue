@@ -1,6 +1,6 @@
 <template>
     <Head>
-        <title>Login — Inertia App</title>
+        <title>{{ t('login.title') }} — {{ t('app_name') }}</title>
     </Head>
 
     <div class="min-h-[70vh] flex items-center justify-center">
@@ -12,8 +12,8 @@
                 >
                     &#128274;
                 </div>
-                <h1 class="text-2xl font-bold text-gray-800 mt-3">Sign in</h1>
-                <p class="text-sm text-gray-500">Use your account to continue</p>
+                <h1 class="text-2xl font-bold text-gray-800 mt-3">{{ t('login.title') }}</h1>
+                <p class="text-sm text-gray-500">{{ t('login.subtitle') }}</p>
             </div>
 
             <div v-if="$page.props.flash?.error" class="mb-4 p-3 bg-red-50 text-red-700 border border-red-200 rounded text-sm">
@@ -22,7 +22,7 @@
 
             <form @submit.prevent="submit" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">{{ t('login.email') }}</label>
                     <input
                         v-model="form.email"
                         type="email"
@@ -35,7 +35,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Password</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">{{ t('login.password') }}</label>
                     <input
                         v-model="form.password"
                         type="password"
@@ -48,7 +48,7 @@
 
                 <label class="flex items-center gap-2 text-sm text-gray-600">
                     <input v-model="form.remember" type="checkbox" class="rounded" />
-                    Remember me
+                    {{ t('login.remember') }}
                 </label>
 
                 <button
@@ -56,7 +56,7 @@
                     :disabled="form.processing"
                     class="w-full px-4 py-2 bg-blue-600 text-white font-semibold rounded shadow hover:bg-blue-700 disabled:opacity-50 transition"
                 >
-                    {{ form.processing ? 'Signing in...' : 'Sign in' }}
+                    {{ form.processing ? t('common.signing_in') : t('common.sign_in') }}
                 </button>
             </form>
 
@@ -69,23 +69,20 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import Layout from '../Shared/Layout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
+import { useTranslator } from '../Composables/useTranslator.js';
 
-export default {
-    layout: Layout,
-    components: { Head },
-    setup() {
-        const form = useForm({
-            email: '',
-            password: '',
-            remember: false,
-        });
+defineOptions({ layout: Layout });
 
-        const submit = () => form.post('/login', { onFinish: () => form.password = '' });
+const { t, localePath } = useTranslator();
 
-        return { form, submit };
-    },
-};
+const form = useForm({
+    email: '',
+    password: '',
+    remember: false,
+});
+
+const submit = () => form.post(localePath('/login'), { onFinish: () => form.password = '' });
 </script>

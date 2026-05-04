@@ -3,40 +3,42 @@
         <header class="bg-white shadow">
             <nav class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
                 <div class="text-xl font-bold text-gray-800">
-                    <Link href="/">MyApp</Link>
+                    <Link :href="localePath('/')">{{ t('app_name') }}</Link>
                 </div>
 
                 <ul class="flex items-center gap-6">
                     <li>
                         <Link
-                            href="/"
+                            :href="localePath('/')"
                             class="text-gray-700 hover:text-blue-600"
-                            :class="{ 'font-bold text-blue-600 underline': $page.url === '/' }"
+                            :class="{ 'font-bold text-blue-600 underline': isActive('/', true) }"
                         >
-                            Home
+                            {{ t('nav.home') }}
                         </Link>
                     </li>
                     <li v-if="user">
                         <Link
-                            href="/user"
+                            :href="localePath('/user')"
                             class="text-gray-700 hover:text-blue-600"
-                            :class="{ 'font-bold text-blue-600 underline': $page.url.startsWith('/user') }"
+                            :class="{ 'font-bold text-blue-600 underline': isActive('/user') }"
                         >
-                            Users
+                            {{ t('nav.users') }}
                         </Link>
                     </li>
                     <li v-if="user">
                         <Link
-                            href="/setting"
+                            :href="localePath('/setting')"
                             class="text-gray-700 hover:text-blue-600"
-                            :class="{ 'font-bold text-blue-600 underline': $page.url.startsWith('/setting') }"
+                            :class="{ 'font-bold text-blue-600 underline': isActive('/setting') }"
                         >
-                            Settings
+                            {{ t('nav.settings') }}
                         </Link>
                     </li>
                 </ul>
 
                 <div class="flex items-center gap-3">
+                    <LanguageSwitcher />
+
                     <template v-if="user">
                         <div class="text-sm text-gray-700 text-right">
                             <p class="font-semibold">{{ user.name }}</p>
@@ -52,20 +54,20 @@
                             </p>
                         </div>
                         <Link
-                            href="/logout"
+                            :href="localePath('/logout')"
                             method="post"
                             as="button"
                             class="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition"
                         >
-                            Logout
+                            {{ t('nav.logout') }}
                         </Link>
                     </template>
                     <Link
                         v-else
-                        href="/login"
+                        :href="localePath('/login')"
                         class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition"
                     >
-                        Login
+                        {{ t('nav.login') }}
                     </Link>
                 </div>
             </nav>
@@ -83,16 +85,26 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import LanguageSwitcher from './LanguageSwitcher.vue';
+import { useTranslator } from '../Composables/useTranslator.js';
 
-export default {
-    components: { Link },
-    setup() {
-        const page = usePage();
-        const user = computed(() => page.props.auth?.user);
-        return { user };
-    },
+const page = usePage();
+const { t, locale, localePath } = useTranslator();
+
+const user = computed(() => page.props.auth?.user);
+
+const stripLocale = (url) => {
+    const path = (url || '/').split('?')[0];
+    const re = new RegExp(`^/(?:de|en)(?=/|$)`);
+    return path.replace(re, '') || '/';
+};
+
+const isActive = (path, exact = false) => {
+    const here = stripLocale(page.url);
+    if (exact) return here === path;
+    return here === path || here.startsWith(path + '/');
 };
 </script>

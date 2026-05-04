@@ -1,11 +1,11 @@
 <template>
     <Head>
-        <title>Edit User #{{ user.id }} — Inertia App</title>
+        <title>{{ t('users.edit_user') }} #{{ user.id }} — {{ t('app_name') }}</title>
     </Head>
 
     <div class="max-w-2xl mx-auto">
         <div class="flex items-center gap-3 mb-6">
-            <Link :href="`/user${buildQuery()}`" class="text-blue-600 hover:underline">&larr; Back to Users</Link>
+            <Link :href="`${localePath('/user')}${buildQuery()}`" class="text-blue-600 hover:underline">&larr; {{ t('common.back') }}</Link>
         </div>
 
         <div class="bg-white rounded-xl shadow border border-gray-100 p-6">
@@ -17,7 +17,7 @@
                     {{ initials(form.name) }}
                 </div>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-800">Edit User</h1>
+                    <h1 class="text-2xl font-bold text-gray-800">{{ t('users.edit_user') }}</h1>
                     <p class="text-sm text-gray-500">User ID: #{{ user.id }}</p>
                 </div>
             </div>
@@ -34,7 +34,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Name</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">{{ t('users.name') }}</label>
                     <input
                         v-model="form.name"
                         type="text"
@@ -45,7 +45,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">{{ t('users.email') }}</label>
                     <input
                         v-model="form.email"
                         type="email"
@@ -56,7 +56,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Phone</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">{{ t('users.phone') }}</label>
                     <input
                         v-model="form.phone"
                         type="text"
@@ -67,7 +67,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Address</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">{{ t('users.address') }}</label>
                     <textarea
                         v-model="form.address"
                         rows="3"
@@ -83,60 +83,57 @@
                         :disabled="form.processing"
                         class="px-6 py-2 bg-blue-600 text-white font-semibold rounded shadow hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                     >
-                        {{ form.processing ? 'Saving...' : 'Save Changes' }}
+                        {{ form.processing ? t('common.saving') : t('common.save') }}
                     </button>
                     <Link
-                        :href="`/user${buildQuery()}`"
+                        :href="`${localePath('/user')}${buildQuery()}`"
                         class="px-6 py-2 bg-gray-100 text-gray-700 font-semibold rounded hover:bg-gray-200 transition"
                     >
-                        Cancel
+                        {{ t('common.cancel') }}
                     </Link>
-                    <span v-if="form.recentlySuccessful" class="text-sm text-green-600">Saved!</span>
+                    <span v-if="form.recentlySuccessful" class="text-sm text-green-600">&#10003;</span>
                 </div>
             </form>
         </div>
     </div>
 </template>
 
-<script>
+<script setup>
 import Layout from '../Shared/Layout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { useTranslator } from '../Composables/useTranslator.js';
 
-export default {
-    layout: Layout,
-    components: { Head, Link },
-    props: {
-        user: Object,
-        filters: { type: Object, default: () => ({}) },
-    },
-    setup(props) {
-        const form = useForm({
-            name: props.user.name,
-            email: props.user.email,
-            phone: props.user.phone,
-            address: props.user.address,
-        });
+defineOptions({ layout: Layout });
 
-        const buildQuery = () => {
-            const params = new URLSearchParams();
-            for (const [k, v] of Object.entries(props.filters)) {
-                if (v !== null && v !== undefined && v !== '') params.set(k, v);
-            }
-            const qs = params.toString();
-            return qs ? `?${qs}` : '';
-        };
+const props = defineProps({
+    user: Object,
+    filters: { type: Object, default: () => ({}) },
+});
 
-        const submit = () => {
-            form.put(`/user/${props.user.id}${buildQuery()}`);
-        };
+const { t, localePath } = useTranslator();
 
-        return { form, submit, buildQuery };
-    },
-    methods: {
-        initials(name) {
-            if (!name) return '?';
-            return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
-        },
-    },
+const form = useForm({
+    name: props.user.name,
+    email: props.user.email,
+    phone: props.user.phone,
+    address: props.user.address,
+});
+
+const buildQuery = () => {
+    const params = new URLSearchParams();
+    for (const [k, v] of Object.entries(props.filters)) {
+        if (v !== null && v !== undefined && v !== '') params.set(k, v);
+    }
+    const qs = params.toString();
+    return qs ? `?${qs}` : '';
+};
+
+const submit = () => {
+    form.put(`${localePath(`/user/${props.user.id}`)}${buildQuery()}`);
+};
+
+const initials = (name) => {
+    if (!name) return '?';
+    return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
 };
 </script>

@@ -1,6 +1,6 @@
 <template>
     <Head>
-        <title>Posts (Inertia) — Inertia App</title>
+        <title>Posts (Inertia) — {{ t('app_name') }}</title>
     </Head>
 
     <div class="flex items-end justify-between mb-6">
@@ -9,16 +9,16 @@
             <p class="text-sm text-gray-500 mt-1">{{ posts.total }} posts total</p>
         </div>
         <Link
-            href="/postsinertia/create"
+            :href="localePath('/postsinertia/create')"
             class="px-4 py-2 text-sm font-semibold bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition"
         >
-            + Create Post
+            + {{ t('common.create') }}
         </Link>
     </div>
 
     <div class="bg-white rounded-xl shadow border border-gray-100 divide-y">
         <div v-if="posts.data.length === 0" class="p-8 text-center text-gray-500">
-            No posts yet. Click "Create Post" above.
+            No posts yet. Click "{{ t('common.create') }}" above.
         </div>
         <div
             v-for="post in posts.data"
@@ -35,16 +35,16 @@
             </div>
             <div class="flex gap-2 flex-shrink-0">
                 <Link
-                    :href="`/postsinertia/${post.id}/edit`"
+                    :href="localePath(`/postsinertia/${post.id}/edit`)"
                     class="px-3 py-1 text-xs font-semibold bg-blue-50 text-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition"
                 >
-                    Edit
+                    {{ t('common.edit') }}
                 </Link>
                 <button
                     @click="remove(post)"
                     class="px-3 py-1 text-xs font-semibold bg-red-50 text-red-600 rounded-full hover:bg-red-600 hover:text-white transition"
                 >
-                    Delete
+                    {{ t('common.delete') }}
                 </button>
             </div>
         </div>
@@ -53,22 +53,20 @@
     <Pagination :links="posts.links" />
 </template>
 
-<script>
+<script setup>
 import Layout from '../../Shared/Layout.vue';
 import Pagination from '../../Shared/Pagination.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { useTranslator } from '../../Composables/useTranslator.js';
 
-export default {
-    layout: Layout,
-    components: { Head, Link, Pagination },
-    props: {
-        posts: Object,
-    },
-    methods: {
-        remove(post) {
-            if (!confirm(`Delete post "${post.title}"?`)) return;
-            router.delete(`/postsinertia/${post.id}`, { preserveScroll: true });
-        },
-    },
+defineOptions({ layout: Layout });
+
+defineProps({ posts: Object });
+
+const { t, localePath } = useTranslator();
+
+const remove = (post) => {
+    if (!confirm(`Delete post "${post.title}"?`)) return;
+    router.delete(localePath(`/postsinertia/${post.id}`), { preserveScroll: true });
 };
 </script>
